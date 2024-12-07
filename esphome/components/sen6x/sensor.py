@@ -34,8 +34,27 @@ DEPENDENCIES = ["i2c"]
 sen6x_ns = cg.esphome_ns.namespace("sen6x")
 SEN6XComponent = sen6x_ns.class_("SEN6XComponent", cg.PollingComponent, i2c.I2CDevice)
 
+# define Constants here
+CONF_ACCELERATION_MODE = "acceleration_mode"
+CONF_ALGORITHM_TUNING = "algorithm_tuning"
+CONF_AUTO_CLEANING_INTERVAL = "auto_cleaning_interval"
+CONF_GAIN_FACTOR = "gain_factor"
+CONF_GATING_MAX_DURATION_MINUTES = "gating_max_duration_minutes"
+CONF_INDEX_OFFSET = "index_offset"
+CONF_LEARNING_TIME_GAIN_HOURS = "learning_time_gain_hours"
+CONF_LEARNING_TIME_OFFSET_HOURS = "learning_time_offset_hours"
+CONF_NORMALIZED_OFFSET_SLOPE = "normalized_offset_slope"
+CONF_NOX = "nox"
+CONF_STD_INITIAL = "std_initial"
+CONF_TEMPERATURE_COMPENSATION = "temperature_compensation"
+CONF_TIME_CONSTANT = "time_constant"
+CONF_VOC = "voc"
+CONF_VOC_BASELINE = "voc_baseline"
+
 # Define enums Here
 RhtAccelerationMode = sen6x_ns.enum("RhtAccelerationMode")
+
+# Define dictionaies here
 
 # Create a dictionary of the acceleration modes to be used in the configuration schema below
 # and in the configuration validation function below
@@ -56,22 +75,21 @@ ACCELERATION_MODES = {
     "high": RhtAccelerationMode.HIGH_ACCELERATION,
 }
 
-# define Constants here
-CONF_ACCELERATION_MODE = "acceleration_mode"
-CONF_ALGORITHM_TUNING = "algorithm_tuning"
-CONF_AUTO_CLEANING_INTERVAL = "auto_cleaning_interval"
-CONF_GAIN_FACTOR = "gain_factor"
-CONF_GATING_MAX_DURATION_MINUTES = "gating_max_duration_minutes"
-CONF_INDEX_OFFSET = "index_offset"
-CONF_LEARNING_TIME_GAIN_HOURS = "learning_time_gain_hours"
-CONF_LEARNING_TIME_OFFSET_HOURS = "learning_time_offset_hours"
-CONF_NORMALIZED_OFFSET_SLOPE = "normalized_offset_slope"
-CONF_NOX = "nox"
-CONF_STD_INITIAL = "std_initial"
-CONF_TEMPERATURE_COMPENSATION = "temperature_compensation"
-CONF_TIME_CONSTANT = "time_constant"
-CONF_VOC = "voc"
-CONF_VOC_BASELINE = "voc_baseline"
+SENSOR_MAP = {
+    CONF_PM_1_0: "set_pm_1_0_sensor",
+    CONF_PM_2_5: "set_pm_2_5_sensor",
+    CONF_PM_4_0: "set_pm_4_0_sensor",
+    CONF_PM_10_0: "set_pm_10_0_sensor",
+    CONF_VOC: "set_voc_sensor",
+    CONF_NOX: "set_nox_sensor",
+    CONF_TEMPERATURE: "set_temperature_sensor",
+    CONF_HUMIDITY: "set_humidity_sensor",
+}
+
+SETTING_MAP = {
+    CONF_AUTO_CLEANING_INTERVAL: "set_auto_cleaning_interval",
+    CONF_ACCELERATION_MODE: "set_acceleration_mode",
+}
 
 # define Actions here
 StartFanAction = sen6x_ns.class_("StartFanAction", automation.Action)
