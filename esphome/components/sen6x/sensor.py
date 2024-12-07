@@ -36,12 +36,7 @@ SEN6XComponent = sen6x_ns.class_("SEN6XComponent", cg.PollingComponent, i2c.I2CD
 
 # Define enums Here
 RhtAccelerationMode = sen6x_ns.enum("RhtAccelerationMode")
-# Create a dictionary of the acceleration modes to be used in the configuration schema below
-ACCELERATION_MODES = {
-    "low": RhtAccelerationMode.LOW_ACCELERATION,
-    "medium": RhtAccelerationMode.MEDIUM_ACCELERATION,
-    "high": RhtAccelerationMode.HIGH_ACCELERATION,
-}
+
 # Create a dictionary of the acceleration modes to be used in the configuration schema below
 # and in the configuration validation function below
 # The dictionary key is the string that will be used in the configuration schema
@@ -55,7 +50,11 @@ ACCELERATION_MODES = {
 # };
 # The enum value is used in the C++ code as follows:
 # RhtAccelerationMode acceleration_mode = RhtAccelerationMode::LOW_ACCELERATION;
-
+ACCELERATION_MODES = {
+    "low": RhtAccelerationMode.LOW_ACCELERATION,
+    "medium": RhtAccelerationMode.MEDIUM_ACCELERATION,
+    "high": RhtAccelerationMode.HIGH_ACCELERATION,
+}
 
 # define Constants here
 CONF_ACCELERATION_MODE = "acceleration_mode"
@@ -183,5 +182,5 @@ CONFIG_SCHEMA = (
         }
     )
     .extend(cv.polling_component_schema("60s"))
-    .extend(i2c.i2c_device_schema(0x69))
+    .extend(i2c.i2c_device_schema(None))
 )
