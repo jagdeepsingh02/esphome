@@ -48,7 +48,9 @@ constexpr int SENSIRION_COMMAND_SIZE = 2;
 constexpr int SENSIRION_WORD_SIZE = 2;
 constexpr int SENSIRION_MAX_BUFFER_WORDS = 32;
 
-template<typename T> constexpr size_t SENSIRION_NUM_WORDS(const T &x) { return sizeof(x) / SENSIRION_WORD_SIZE; }
+template<typename T> constexpr size_t SENSIRION_NUM_WORDS(const T &x) noexcept {
+  return sizeof(x) / SENSIRION_WORD_SIZE;
+}
 
 uint8_t sensirion_i2c_generate_crc(const uint8_t *data, uint16_t count);
 
