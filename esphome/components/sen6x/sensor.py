@@ -36,8 +36,10 @@ DEPENDENCIES = ["i2c"]
 # Todo : Make it Multi-Configuration if possible
 MULTI_CONF = False
 
-sen6x_ns = cg.esphome_ns.namespace("sen6x")
-SEN6XComponent = sen6x_ns.class_("SEN6XComponent", cg.PollingComponent, i2c.I2CDevice)
+sen6x_i2c_ns = cg.esphome_ns.namespace("sen6x_i2c")
+SEN6X_I2C_Component = sen6x_i2c_ns.class_(
+    "SEN6X_I2C_Component", cg.PollingComponent, i2c.I2CDevice
+)
 
 # define Constants here
 CONF_ACCELERATION_MODE = "acceleration_mode"
@@ -57,7 +59,7 @@ CONF_VOC = "voc"
 CONF_VOC_BASELINE = "voc_baseline"
 
 # Define enums Here
-RhtAccelerationMode = sen6x_ns.enum("RhtAccelerationMode")
+RhtAccelerationMode = sen6x_i2c_ns.enum("RhtAccelerationMode")
 
 # Define dictionaies here
 
@@ -97,7 +99,7 @@ SETTING_MAP = {
 }
 
 # define Actions here
-StartFanAction = sen6x_ns.class_("StartFanAction", automation.Action)
+StartFanAction = sen6x_i2c_ns.class_("StartFanAction", automation.Action)
 
 
 # Functions to validate the configuration schema
@@ -135,7 +137,7 @@ ALGORITHM_TUNING_SCHEMA = cv.Schema(
 CONFIG_SCHEMA = (
     cv.Schema(
         {
-            cv.GenerateID(): cv.declare_id(SEN6XComponent),
+            cv.GenerateID(): cv.declare_id(SEN6X_I2C_Component),
             cv.Optional(CONF_PM_1_0): sensor.sensor_schema(
                 unit_of_measurement=UNIT_MICROGRAMS_PER_CUBIC_METER,
                 icon=ICON_CHEMICAL_WEAPON,
