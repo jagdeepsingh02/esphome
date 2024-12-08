@@ -4,6 +4,7 @@ from esphome.components import i2c, sensor
 import esphome.config_validation as cv
 from esphome.const import (
     CONF_HUMIDITY,
+    CONF_ID,
     CONF_OFFSET,
     CONF_PM_1_0,
     CONF_PM_2_5,
@@ -30,6 +31,10 @@ from esphome.const import (
 CODEOWNERS = ["@jagdeepsingh02"]
 DEPENDENCIES = ["i2c"]
 # AUTO_LOAD = [""]
+
+# Only Single Configuration is allowed
+# Todo : Make it Multi-Configuration if possible
+MULTI_CONF = False
 
 sen6x_ns = cg.esphome_ns.namespace("sen6x")
 SEN6XComponent = sen6x_ns.class_("SEN6XComponent", cg.PollingComponent, i2c.I2CDevice)
@@ -202,3 +207,18 @@ CONFIG_SCHEMA = (
     .extend(cv.polling_component_schema("60s"))
     .extend(i2c.i2c_device_schema(None))
 )
+
+
+async def to_code(config):
+    var = cg.new_Pvariable(config[CONF_ID])
+    await cg.register_component(var, config)
+    await i2c.register_i2c_device(var, config)
+
+    for key, funcName in SETTING_MAP.items():
+        if key in config:
+            cg.add(getattr(var, funcName)(config[key]))
+
+    for key, funcName in SENSOR_MAP.items():
+        if key in config:
+            sens = await sensor.new_sensor(config[key])
+            cg.add(getattr(var, funcName)(sens))
