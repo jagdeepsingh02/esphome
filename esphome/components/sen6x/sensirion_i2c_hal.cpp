@@ -32,6 +32,7 @@
 #include "sensirion_i2c_hal.h"
 #include "sensirion_common.h"
 #include "sensirion_config.h"
+#include "esphome/core/hal.h"
 
 namespace esphome {
 namespace sen6x_i2c {
@@ -65,12 +66,14 @@ int16_t sensirion_i2c_hal_select_bus(uint8_t bus_idx) {
  * Initialize all hard- and software components that are needed for the I2C
  * communication.
  */
-void sensirion_i2c_hal_init(void) { /* TODO:IMPLEMENT */ }
+void sensirion_i2c_hal_init(void) { /* TODO:IMPLEMENT */
+}
 
 /**
  * Release all resources initialized by sensirion_i2c_hal_init().
  */
-void sensirion_i2c_hal_free(void) { /* TODO:IMPLEMENT or leave empty if no resources need to be freed */ }
+void sensirion_i2c_hal_free(void) { /* TODO:IMPLEMENT or leave empty if no resources need to be freed */
+}
 
 /**
  * Execute one read transaction on the I2C bus, reading a given number of bytes.
@@ -111,7 +114,7 @@ int8_t sensirion_i2c_hal_write(uint8_t address, const uint8_t *data, uint8_t cou
  *
  * @param useconds the sleep time in microseconds
  */
-void sensirion_i2c_hal_sleep_usec(uint32_t useconds) { /* TODO:IMPLEMENT */ }
+void sensirion_i2c_hal_sleep_usec(uint32_t useconds) { delay(useconds * 1000); }
 
 }  // namespace sen6x_i2c
 }  // namespace esphome

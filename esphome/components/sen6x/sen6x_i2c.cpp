@@ -54,6 +54,138 @@ static uint8_t communication_buffer[48] = {0};
 static uint8_t _i2c_address;
 static const char *const TAG = "sen6x_i2c";
 
+// Local function for internal use
+void print_byte_array(uint8_t *array, uint16_t len) {
+  // Calculate the required buffer size: 2 characters per byte + 1 for the null terminator
+  size_t buffer_size = 2 * len + 1;
+  char *buffer = new char[buffer_size];
+  buffer[0] = '\0';  // Initialize the buffer with an empty string
+
+  for (uint16_t i = 0; i < len; i++) {
+    char byte_str[3];  // Temporary buffer to hold each byte as a hex string
+    snprintf(byte_str, sizeof(byte_str), "%02x", array[i]);
+    strcat(buffer, byte_str);  // Concatenate the byte string to the buffer
+  }
+
+  ESP_LOGI(TAG, "0x%s", buffer);  // Print the buffer
+  delete[] buffer;                // Free the allocated memory
+}
+
+void print_ascii_array(uint8_t *array, uint16_t len) {
+  char *buffer = new char[len + 1];  // Allocate buffer with space for null terminator
+  memcpy(buffer, array, len);        // Copy the array to the buffer
+  buffer[len] = '\0';                // Null-terminate the string
+
+  ESP_LOGI(TAG, "%s", buffer);  // Print the buffer
+  delete[] buffer;              // Free the allocated memory
+}
+
+std::string ascii_array_to_string(uint8_t *array, uint16_t len) {
+  char *buffer = new char[len + 1];  // Allocate buffer with space for null terminator
+  memcpy(buffer, array, len);        // Copy the array to the buffer
+  buffer[len] = '\0';                // Null-terminate the string
+
+  std::string result(buffer);  // Convert to std::string
+  delete[] buffer;             // Free the allocated memory
+
+  return result;  // Return the std::string
+}
+
+// Public functions of class SEN6X_I2C_Component
+void SEN6X_I2C_Component::setup() {
+  ESP_LOGCONFIG(TAG, "Setting up sen6x...");
+
+  // the sensor needs 1000 ms to enter the idle state
+  // just in case also this model needs some time to start up
+  this->set_timeout(1000, [this]() {
+    int16_t error = NO_ERROR;
+    // TODO: Implement this if needed
+    sensirion_i2c_hal_init();
+    // Initialize the sensor bus address
+    this->sen66_init(SEN66_I2C_ADDR_6B);
+
+    // Reset the device
+    error = this->sen66_device_reset();
+    if (error != NO_ERROR) {
+      ESP_LOGE(TAG, "error executing device_reset(): %i", error);
+      this->error_code_ = RESET_FAILED;
+      this->mark_failed();
+      return;
+    }
+    // Wait for 1.2 seconds
+    sensirion_hal_sleep_us(1200000);
+
+    // Get the serial number and print it
+    uint8_t serial_number[32] = {0};
+    error = this->sen66_get_serial_number(serial_number, 32);
+    if (error != NO_ERROR) {
+      ESP_LOGE(TAG, "error executing get_serial_number(): %i", error);
+      this->error_code_ = SERIAL_NUMBER_IDENTIFICATION_FAILED;
+      this->mark_failed();
+      return;
+    }
+    ESP_LOGE(TAG, "serial_number: ");
+    print_byte_array(serial_number, 32);
+
+    // Get the product name and print it
+    uint8_t product_name[32] = {0};
+    error = this->sen66_get_product_name(product_name, 32);
+    if (error != NO_ERROR) {
+      ESP_LOGE(TAG, "error executing get_product_name(): %i", error);
+      this->error_code_ = PRODUCT_NAME_READ_FAILED;
+      this->mark_failed();
+      return;
+    }
+    this->product_name_ = ascii_array_to_string(product_name, 32);
+    ESP_LOGI(TAG, "product_name: %s", this->product_name_.c_str());
+
+    // Read device status and print it
+    sen66_device_status status;
+    error = this->sen66_read_device_status(&status);
+    if (error != NO_ERROR) {
+      ESP_LOGE(TAG, "error executing read_device_status(): %i", error);
+      this->error_code_ = DEVICE_STATUS_READ_FAILED;
+      this->mark_failed();
+      return;
+    }
+    ESP_LOGI(TAG, "Device status: 0x%08x", status.value);
+    ESP_LOGI(TAG,
+             "Status bits: fan_error=%u, rht_error=%u, gas_error=%u, co2_2_error=%u, pm_error=%u, fan_speed_warning=%u",
+             status.fan_error, status.rht_error, status.gas_error, status.co2_2_error, status.pm_error,
+             status.fan_speed_warning);
+
+    // Start continuous measurement
+    error = this->sen66_start_continuous_measurement();
+    if (error != NO_ERROR) {
+      ESP_LOGE(TAG, "error executing start_continuous_measurement(): %i", error);
+      this->error_code_ = MEASUREMENT_INIT_FAILED;
+      this->mark_failed();
+      return;
+    }
+
+    // Determine the sensor type
+    Sen6xType sen6x_type = UNKNOWN;
+    if (product_name_ == "SEN60") {
+      sen6x_type = SEN60;
+    } else if (product_name_ == "SEN63") {
+      sen6x_type = SEN63;
+    } else if (product_name_ == "SEN65") {
+      sen6x_type = SEN65;
+    } else if (product_name_ == "SEN66") {
+      sen6x_type = SEN66;
+    } else if (product_name_ == "SEN68") {
+      sen6x_type = SEN68;
+    } else {
+      sen6x_type = UNKNOWN;
+      ESP_LOGE(TAG, "Unknown product name: %s", this->product_name_.c_str());
+      this->mark_failed();
+      return;
+    }
+  });
+}
+
+// Private functions of calss SEN6X_I2C_Component
+
 void SEN6X_I2C_Component::sen66_init(uint8_t i2c_address) { _i2c_address = i2c_address; }
 
 uint16_t SEN6X_I2C_Component::sen66_signal_co2(uint16_t co2_raw) {

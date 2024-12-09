@@ -99,9 +99,31 @@ typedef union {
   uint32_t value;
 } sen66_device_status;
 
+enum ERRORCODE {
+  RESET_FAILED,
+  DEVICE_STATUS_READ_FAILED,
+  PRODUCT_NAME_READ_FAILED,
+  COMMUNICATION_FAILED,
+  SERIAL_NUMBER_IDENTIFICATION_FAILED,
+  MEASUREMENT_INIT_FAILED,
+  PRODUCT_NAME_FAILED,
+  FIRMWARE_FAILED,
+  UNKNOWN
+};
+
 class SEN6X_I2C_Component : public PollingComponent, public i2c::I2CDevice {
  public:
+  float get_setup_priority() const override { return setup_priority::DATA; }
+  void setup() override;
+  void dump_config() override;
+  void update() override;
+
+  enum Sen6xType { SEN60, SEN63, SEN65, SEN66, SEN68, UNKNOWN };
+
  private:
+  ERRORCODE error_code_;
+  std::string product_name_;
+
   /**
    * @brief Initialize i2c address of driver
    *
